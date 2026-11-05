@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Upload, CheckCircle2, Clock, SkipForward, Circle, Filter } from 'lucide-react';
+import { CheckCircle2, Clock, SkipForward, Circle, Filter } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
@@ -13,7 +13,8 @@ const firebaseConfig = {
   messagingSenderId: "413447855978",
   appId: "1:413447855978:web:628b78e88566ef58dd4f13",
   measurementId: "G-CJEF77LDWD"
-};const app = initializeApp(firebaseConfig);
+};
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -55,7 +56,6 @@ const STATUS_COLORS = {
 export default function App() {
   const [user, setUser] = useState(null);
   const [progress, setProgress] = useState({});
-  const [pdfUrl, setPdfUrl] = useState(null);
   
   // Filters
   const [filterStatus, setFilterStatus] = useState('All');
@@ -100,14 +100,6 @@ export default function App() {
   }, [user]);
 
   // --- EVENT HANDLERS ---
-  const handlePdfUpload = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
-    }
-  };
-
   const toggleQuestionStatus = async (qId) => {
     if (!user) return;
     
@@ -156,46 +148,11 @@ export default function App() {
   }, [filterTopic, filterStatus, progress]);
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full bg-slate-50 font-sans text-slate-800">
-      
-      {/* LEFT PANEL: PDF VIEWER */}
-      <div className="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-slate-200 bg-white flex flex-col">
-        {!pdfUrl ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
-            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-500">
-              <Upload size={32} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-slate-700">Load Question Bank</h2>
-              <p className="text-slate-500 mt-2">Upload your local "[TFQB] CSE103.pdf" file to view alongside the tracker.</p>
-            </div>
-            <label className="mt-4 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-sm">
-              Select PDF
-              <input type="file" accept="application/pdf" className="hidden" onChange={handlePdfUpload} />
-            </label>
-          </div>
-        ) : (
-          <div className="flex-1 relative">
-            <iframe 
-              src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`} 
-              className="w-full h-full border-none"
-              title="PDF Viewer"
-            />
-            <button 
-              onClick={() => setPdfUrl(null)}
-              className="absolute bottom-4 right-4 bg-slate-800 text-white p-2 rounded shadow-lg hover:bg-slate-700 text-sm"
-            >
-              Close PDF
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* RIGHT PANEL: TRACKER */}
-      <div className="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto flex flex-col bg-slate-50">
+    <div className="h-screen w-full bg-slate-200 font-sans text-slate-800 p-0 md:p-6 flex justify-center">
+      <div className="w-full max-w-5xl h-full overflow-y-auto flex flex-col bg-slate-50 md:rounded-xl shadow-2xl border border-slate-200">
         
         {/* Header & Dashboard */}
-        <div className="p-6 bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+        <div className="p-6 bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm md:rounded-t-xl">
           <div className="flex justify-between items-end mb-6">
             <div>
               <h1 className="text-2xl font-bold text-slate-800 tracking-tight">CSE 103 Tracker</h1>
@@ -255,13 +212,13 @@ export default function App() {
 
         {/* Question Grid */}
         <div className="p-6">
-          <div className="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-8 gap-3">
+          <div className="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-10 gap-3">
             {filteredQuestions.map(q => {
               const status = progress[q.id] || 'Not Started';
               return (
                 <button
                   key={q.id}
-                  title={`${q.topic} - ${status}`}
+                  title={`${q.topic}\n${status}`}
                   onClick={() => toggleQuestionStatus(q.id)}
                   className={`
                     h-12 flex items-center justify-center rounded-lg border-2 font-bold text-sm transition-all
